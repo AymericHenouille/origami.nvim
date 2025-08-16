@@ -1,13 +1,13 @@
 local M = {}
 
 ---Setup the OrigamiFold command.
----@param opts Options The option used to setup origami.nvim
-function M.setup(opts)
-  local lines_module = require("origami.functions.lines")
-  vim.api.nvim_create_user_command("OrigamiFold", lines_module.apply_node_option_on_lines_under_cursor(opts, function(lines, node_options)
-    local fold_fn = node_options.fold or function(_) return { "" } end
-    return fold_fn(lines)
-  end), {})
+---@param format_module FormatModule The format module.
+function M.setup(format_module)
+  vim.api.nvim_create_user_command("OrigamiFold", function()
+    local node = format_module.get_node_at_cursor()
+    if not node then return end
+    format_module.fold(node)
+  end, { desc = "Fold the node under the cursor position" })
 end
 
 return M

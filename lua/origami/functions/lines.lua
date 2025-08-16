@@ -59,7 +59,7 @@ end
 ---You can apply this parameters to the apply_node_options function that return the lines to substitute.
 ---Then this function will update the current buffer.
 ---@param opts Options The options for origami.nvim
----@param apply_node_options fun(lines: string[], node_options: BlockNodeOption): string[] The function used to update the target lines.
+---@param apply_node_options fun(node: TSNode, node_options: BlockNodeOption): string[] The function used to update the target lines.
 ---@return fun() update_lines_under_cursor A function that udpate the line under the cursor.
 function M.apply_node_option_on_lines_under_cursor(opts, apply_node_options)
   return function()
@@ -75,15 +75,57 @@ function M.apply_node_option_on_lines_under_cursor(opts, apply_node_options)
 
     if not node then print("No block found") return end
 
-    local start_row, start_col, end_row, end_col = node:range()
-    local lines = vim.api.nvim_buf_get_text(0, start_row, start_col, end_row, end_col, {})
     local node_options = opts.block_nodes[language][node:type()] --[[@as BlockNodeOption]]
     if not node_options then print("No block node option found") return end
-    local updated_lines = apply_node_options(lines, node_options)
+    local updated_lines = apply_node_options(node, node_options)
     local indented_lines = auto_indent_lines(updated_lines)
 
-    vim.api.nvim_buf_set_text(0, start_row, start_col, end_row, end_col, indented_lines)
+    local start_row, start_col, end_row, end_col = node:range()
+    vim.api.nvim_buf_set_text(
+      0,
+      start_row,
+      start_col,
+      end_row,
+      end_col,
+      indented_lines
+    )
   end
+end
+
+---Get the lines that compose the given node
+---@param node TSNode The to extract the lines
+---@return string[] lines The extracted lines.
+function M.get_node_lines(node)
+  local start_row, start_col, end_row, end_col = node:range()
+  return vim.api.nvim_buf_get_text(0, start_row, start_col, end_row, end_col, {})
+end
+
+---Check if the given node is write on multiple lines
+---@param node TSNode The node to check.
+---@return boolean is_multiline True if the node is write on multiple lines.
+function M.is_multiline(node)
+  local start_row, _, end_row, _ = node:range()
+  return start_row > end_row
+end
+
+---Get the content of a node in one line
+---@param node TSNode The target node.
+---@return string text The node content.
+function M.node_text_one_line(node)
+  local lines = M.get_node_lines(node)
+  local text = table.concat(lines, " ")
+  return (text:gsub("%s+", " "))
+end
+
+---Get the current buffer text
+---@param start_row number The start row.
+---@param start_column number The start column.
+---@param end_row number The end row.
+---@param end_column number The end column.
+---@return string text The text inside the target erea.
+function M.buf_text(start_row, start_column, end_row, end_column)
+  local lines = vim.api.nvim_buf_get_text(0, start_row, start_column, end_row, end_column, {})
+  return table.concat(lines, "\n")
 end
 
 return M
