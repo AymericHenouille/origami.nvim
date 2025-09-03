@@ -24,7 +24,6 @@ function M.create_block_node_option(options)
   }, options)
 end
 
-
 ---@class BlockNodeOptionModule provide somes function for manipulate block node option
 ---@field is_block_node fun(node: TSNode): boolean
 ---@field get_block_node_option fun(node: TSNode): BlockNodeOption

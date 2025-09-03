@@ -10,7 +10,7 @@ return {
       "for_statement",
     },
     lua = {
-      "function_definition",
+      function_declaration = require("origami.options.lua.function_declaration"),
       function_call = require("origami.options.lua.function_call"),
       "if_statement",
       "else_statement",

@@ -21,15 +21,15 @@ function M.fold(node)
   local text = ""
   for child in node:iter_children() do
     local child_type = child:type()
-    if child_type == "identifier" or child_type == "dot_index_expression"  then
-      local node_content = node_module.get_node_content(child)
-      text = text .. table.concat(node_content, "\n")
-    elseif child_type == "arguments" then
+    if child_type == "arguments" then
       for argument in child:iter_children() do
         local argument_type = argument:type()
         local node_content = node_module.get_node_content(argument)
         text = text .. format(argument_type, table.concat(node_content, "\n"))
       end
+    else
+      local node_content = node_module.get_node_content(child)
+      text = text .. table.concat(node_content, "\n")
     end
   end
   return vim.split(text, "\n")
